@@ -9,8 +9,8 @@ COPY src ./src
 # ✅ Always create empty folder (prevents checksum crash)
 RUN mkdir -p /app/models
 
-# ✅ Safe copy: if folder missing → no error
-COPY models /app/models 2>/dev/null || true
+# ✅ Proper copy (no redirect, no crash)
+COPY models/ /app/models/
 
 ENV PYTHONUNBUFFERED=1
 
