@@ -1,0 +1,18 @@
+
+groups:
+- name: api
+  rules:
+  - alert: HighErrorRate
+    expr: increase(sp_errors_total[5m]) / increase(sp_predictions_total[5m]) > 0.05
+    for: 10m
+    labels: { severity: page }
+    annotations:
+      summary: "High API error rate"
+      description: ">5% errors over 10m"
+  - alert: HighLatency
+    expr: histogram_quantile(0.95, rate(sp_prediction_latency_seconds_bucket[5m])) > 0.5
+    for: 10m
+    labels: { severity: warn }
+    annotations:
+      summary: "p95 latency high"
+      description: ">500ms for 10m"

@@ -1,0 +1,25 @@
+{
+  "title": "Student API Overview",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Predictions",
+      "targets": [
+        {
+          "expr": "sum(increase(sp_predictions_total[5m]))"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Latency p95",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(sp_prediction_latency_seconds_bucket[5m]))"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 30,
+  "version": 1
+}

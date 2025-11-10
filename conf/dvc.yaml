@@ -1,0 +1,23 @@
+
+stages:
+  make_dataset:
+    cmd: python -m src.data.make_dataset --output data/raw/StudentsPerformance.csv
+    outs:
+      - data/raw/StudentsPerformance.csv
+  build_features:
+    cmd: python -m src.features.build_features --input data/raw/StudentsPerformance.csv --output data/processed/features.csv
+    deps:
+      - data/raw/StudentsPerformance.csv
+      - src/features/build_features.py
+    outs:
+      - data/processed/features.csv
+  train:
+    cmd: python -m src.models.train --params conf/params.yaml
+    deps:
+      - data/processed/features.csv
+      - src/models/train.py
+      - conf/params.yaml
+    outs:
+      - models/model.pkl
+    metrics:
+      - metrics.json

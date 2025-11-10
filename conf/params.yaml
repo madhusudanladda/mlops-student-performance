@@ -1,0 +1,15 @@
+
+problem_type: classification
+features:
+  numeric: ["reading score", "writing score"]
+  categorical: ["gender", "race/ethnicity", "parental level of education", "lunch", "test preparation course"]
+model:
+  name: LogisticRegression
+  params:
+    max_iter: 1000
+thresholds:
+  promote_if_f1_improvement: 0.01
+mlflow:
+  tracking_uri: http://mlflow:5000
+  experiment: student-performance
+  registered_model_name: student_performance

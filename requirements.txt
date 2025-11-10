@@ -1,0 +1,15 @@
+
+fastapi
+uvicorn
+pydantic
+scikit-learn
+pandas
+numpy
+mlflow
+dvc
+prometheus-client
+evidently==0.4.38
+joblib
+pyyaml
+pytest
+requests
