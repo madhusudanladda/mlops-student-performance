@@ -2,6 +2,17 @@
 import argparse, json, yaml, os
 import pandas as pd
 import os
+    # MLflow logging (disabled in CI environment)
+    if not IS_CI:
+        mlflow.set_tracking_uri(params["mlflow"]["tracking_uri"])
+        mlflow.set_experiment(params["mlflow"]["experiment"])
+        with mlflow.start_run():
+            mlflow.log_params(params["model"]["params"])
+            mlflow.log_metrics(metrics)
+            mlflow.sklearn.log_model(pipe, "model", registered_model_name=params["mlflow"]["registered_model_name"])
+    else:
+        print("⚠ Skipping MLflow logging (running in CI)")
+
 import mlflow
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
@@ -42,14 +53,6 @@ def train(params_path: str):
     joblib.dump(pipe, "models/model.pkl")
     json.dump(metrics, open("metrics.json", "w"))
     print("✅ Metrics:", metrics)
-
-    if not IS_CI:
-        mlflow.set_tracking_uri(params["mlflow"]["tracking_uri"])
-        mlflow.set_experiment(params["mlflow"]["experiment"])
-        with mlflow.start_run():
-            mlflow.log_params(params["model"]["params"])
-            mlflow.log_metrics(metrics)
-            mlflow.sklearn.log_model(pipe, "model", registered_model_name=params["mlflow"]["registered_model_name"])
 
     # MLflow logging
     mlflow.set_tracking_uri(params["mlflow"]["tracking_uri"])
