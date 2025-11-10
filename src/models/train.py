@@ -1,25 +1,14 @@
-
 import argparse, json, yaml, os
 import pandas as pd
-import os
-    # MLflow logging (disabled in CI environment)
-    if not IS_CI:
-        mlflow.set_tracking_uri(params["mlflow"]["tracking_uri"])
-        mlflow.set_experiment(params["mlflow"]["experiment"])
-        with mlflow.start_run():
-            mlflow.log_params(params["model"]["params"])
-            mlflow.log_metrics(metrics)
-            mlflow.sklearn.log_model(pipe, "model", registered_model_name=params["mlflow"]["registered_model_name"])
-    else:
-        print("⚠ Skipping MLflow logging (running in CI)")
-
 import mlflow
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.pipeline import Pipeline
-from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score, accuracy_score
+from sklearn.linear_model import LogisticRegression
 import joblib
+
+IS_CI = os.getenv("CI") == "true"
 
 def train(params_path: str):
     params = yaml.safe_load(open(params_path))
@@ -32,35 +21,33 @@ def train(params_path: str):
         ("cat", OneHotEncoder(handle_unknown="ignore"), params["features"]["categorical"]),
     ])
 
-    if params["model"]["name"] == "LogisticRegression":
-        model = LogisticRegression(**params["model"]["params"])
-    else:
-        raise ValueError("Unsupported model for template")
-
+    model = LogisticRegression(**params["model"]["params"])
     pipe = Pipeline([("pre", pre), ("model", model)])
     pipe.fit(X, y)
 
     preds = pipe.predict(X)
-    metrics = {}
-    if params["problem_type"]=="classification":
-        metrics["accuracy"] = float(accuracy_score(y, preds))
-        metrics["f1"] = float(f1_score(y, preds))
-    else:
-        # regression metrics placeholder
-        pass
+    metrics = {
+        "accuracy": float(accuracy_score(y, preds)),
+        "f1": float(f1_score(y, preds))
+    }
 
     os.makedirs("models", exist_ok=True)
     joblib.dump(pipe, "models/model.pkl")
-    json.dump(metrics, open("metrics.json", "w"))
+
+    with open("metrics.json", "w") as f:
+        json.dump(metrics, f)
     print("✅ Metrics:", metrics)
 
-    # MLflow logging
-    mlflow.set_tracking_uri(params["mlflow"]["tracking_uri"])
-    mlflow.set_experiment(params["mlflow"]["experiment"])
-    with mlflow.start_run():
-        mlflow.log_params(params["model"]["params"])
-        mlflow.log_metrics(metrics)
-        mlflow.sklearn.log_model(pipe, "model", registered_model_name=params["mlflow"]["registered_model_name"])
+    # ✅ MLflow Logging (skip in CI)
+    if not IS_CI:
+        mlflow.set_tracking_uri(params["mlflow"]["tracking_uri"])
+        mlflow.set_experiment(params["mlflow"]["experiment"])
+        with mlflow.start_run():
+            mlflow.log_params(params["model"]["params"])
+            mlflow.log_metrics(metrics)
+            mlflow.sklearn.log_model(pipe, "model", registered_model_name=params["mlflow"]["registered_model_name"])
+    else:
+        print("⚠ Skipping MLflow logging in CI")
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
