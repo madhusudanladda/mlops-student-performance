@@ -6,11 +6,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src ./src
 
-# ✅ Create models folder first so COPY never fails
+# ✅ Always create empty folder (prevents checksum crash)
 RUN mkdir -p /app/models
 
-# ✅ Copy only if folder exists (CI safe)
-COPY models ./models 2>/dev/null || true
+# ✅ Safe copy: if folder missing → no error
+COPY models /app/models 2>/dev/null || true
 
 ENV PYTHONUNBUFFERED=1
 
