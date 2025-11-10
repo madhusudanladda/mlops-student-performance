@@ -27,10 +27,9 @@ jobs:
           python-version: '3.11'
       - name: Install deps
         run: pip install -r requirements.txt
-      - name: DVC init and repro
-        run: |
-          dvc init -q
-          dvc repro
+      - name: Reproduce pipeline
+        run: dvc repro
+
       - name: Log to MLflow
         env:
           MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
