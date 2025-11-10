@@ -6,8 +6,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src ./src
 
-# ✅ Create models folder so Docker build never fails
+# ✅ Create models folder first so COPY never fails
 RUN mkdir -p /app/models
+
+# ✅ Copy only if folder exists (CI safe)
 COPY models ./models 2>/dev/null || true
 
 ENV PYTHONUNBUFFERED=1
