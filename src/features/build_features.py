@@ -1,9 +1,11 @@
-
-import argparse, pandas as pd
+import argparse, pandas as pd, os
 
 def main(inp: str, out: str):
     df = pd.read_csv(inp)
-    # No heavy processing; keep as-is for model to one-hot/scale in pipeline
+
+    # ✅ Ensure directory exists
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+
     df.to_csv(out, index=False)
     print(f"✅ Features saved to {out}")
 
